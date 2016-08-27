@@ -1,7 +1,7 @@
 
 ## Skapespeare example
 
-**Step 1**: After all search "shakespeare.txt" on google, download first link and rename to skapespeare.txt.
+**Step 1**: Before all, search "shakespeare.txt" on google, download first link and rename to skapespeare.txt.
 
 **Step 2**: Load skakespeare complete works to spark context.
 
@@ -52,7 +52,9 @@ def sum():
 def descendent():
     return lambda word_times: -word_times[1]
 
-words_frequency = words.map(lambda word: (word, 1)).reduceByKey(sum()).cache()
+words_frequency = words.map(lambda word: (word, 1)) \
+                       .reduceByKey(sum()) \
+                       .cache()
 
 print(words_frequency.takeOrdered(10, descendent()))
 ```
@@ -74,7 +76,7 @@ print("Diferent words count: " + str(words.distinct().count()))
 
 
 ```python
-two_letter_words_frequency = words_frequency.filter(lambda word_times: len(word_times[0]) == 2) \
+two_letter_words_frequency = words_frequency.filter(lambda word_times: len(word_times[0]) == 2)
                                             
 print(two_letter_words_frequency.takeOrdered(10, descendent()))
 ```
