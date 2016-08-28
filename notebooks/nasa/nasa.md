@@ -13,11 +13,25 @@ pip install apache-log-parser
 ```
 After installation reboot jupyter.
 
-**Step 3**: Load logs and show lines count.
+**Step 3**: Set max executor memory.
 
 
 ```python
-lines = sc.textFile('/home/adrian/development/spark/notebooks/nasa/access_log_Jul95')
+sc._conf.set("spark.executor.memory", "8g")
+```
+
+
+
+
+    <pyspark.conf.SparkConf at 0x7f248222efd0>
+
+
+
+**Step 4**: Load logs and show lines count.
+
+
+```python
+lines = sc.textFile('/home/adrian/development/spark/notebooks/nasa/access_log_Jul95').cache()
 
 print('First Line: %s' % lines.take(1))
 print('File size: %s lines.' % lines.count())

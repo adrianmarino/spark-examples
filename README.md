@@ -16,6 +16,8 @@ yaourt -S anaconda
 **Step 3:** Edit ```~/.bashrc``` and add:
 
 ```bash
+# Tell spark that use all cpu cores...
+export MASTER=local[*]
 export SPARK_HOME=/opt/apache-spark
 export PYTHONPATH=$SPARK_HOME/python
 
