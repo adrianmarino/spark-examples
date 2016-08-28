@@ -45,17 +45,24 @@ print('File size: %s lines.' % lines.count())
 
 
 ```python
+import sys
+from py4j.protocol import Py4JJavaError
 import apache_log_parser
+
 parser = apache_log_parser.make_parser('%h - - %t \"%r\" %s %b')
 
-# print(parser('unicomp6.unicomp.net - - [01/Jul/1995:00:00:06 -0400] "GET /shuttle/countdown/ HTTP/1.0" 200 3985'))
+def is_valid(line):
+    return len(line) > 50
 
-line_tuples = lines.map(parser).map(lambda line: (line['remote_host'], \
-                                                  line['time_received_datetimeobj'], \
-                                                  line['request_first_line'], \
-                                                  int(line['status']), \
-                                                  int(line['response_bytes_clf'].replace('-','0'))) \
-                                   ).cache()
+def to_log_line(line):
+    parsed_line = parser(line)
+    return (parsed_line['remote_host'], \
+            parsed_line['time_received_datetimeobj'], \
+            parsed_line['request_first_line'], \
+            int(parsed_line['status']), \
+            int(parsed_line['response_bytes_clf'].replace('-','0')))        
+
+line_tuples = lines.filter(is_valid).map(to_log_line).cache()
 
 print('Line tuple: %s.' % line_tuples.take(1))
 ```
