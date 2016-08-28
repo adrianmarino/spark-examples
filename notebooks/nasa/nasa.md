@@ -4,16 +4,14 @@
 
 **Question**: What are the endpoints most accessed between 20:00 and 23:59?
 
-**Step 1**: Before all, download [nasa logs](http://ita.ee.lbl.gov/html/contrib/NASA-HTTP.html).
 
-
-**Step 2**: Install apache-log-parser lib:
+**Step 1**: Install apache-log-parser lib:
 ```bash
 pip install apache-log-parser
 ```
-After installation reboot jupyter.
+After installation, reboot jupyter.
 
-**Step 3**: Set max executor memory.
+**Step 2**: Set max executor memory.
 
 
 ```python
@@ -26,6 +24,8 @@ sc._conf.set("spark.executor.memory", "8g")
     <pyspark.conf.SparkConf at 0x7f248222efd0>
 
 
+
+**Step 3**: Download [nasa logs](http://ita.ee.lbl.gov/html/contrib/NASA-HTTP.html) used as input of this example.
 
 **Step 4**: Load logs and show lines count.
 
