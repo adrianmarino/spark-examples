@@ -34,10 +34,10 @@ words = words.map(lambda word: strip_punctuation(word).strip()) \
              .filter(lambda word: not (word in stop_words or word.isdigit())) \
              .cache()
 
-print(words.take(10))
+print('Words: %s.' % ', '.join(words.take(10)))
 ```
 
-    ['sonnets', 'william', 'shakespeare', 'fairest', 'creatures', 'desire', 'increase', 'beautys', 'rose', 'die']
+    Words: sonnets, william, shakespeare, fairest, creatures, desire, increase, beautys, rose, die.
 
 
 **Step 5**: Get more popular words.
@@ -56,20 +56,20 @@ words_frequency = words.map(lambda word: (word, 1)) \
                        .reduceByKey(sum()) \
                        .cache()
 
-print(words_frequency.takeOrdered(10, descendent()))
+print('Words frequency: %s.' % words_frequency.takeOrdered(10, descendent()))
 ```
 
-    [('lord', 3059), ('king', 2861), ('good', 2812), ('sir', 2754), ('well', 2462), ('enter', 2098), ('love', 2054), ('ill', 1972), ('hath', 1941), ('man', 1835)]
+    Words frequency: [('lord', 3059), ('king', 2861), ('good', 2812), ('sir', 2754), ('well', 2462), ('enter', 2098), ('love', 2054), ('ill', 1972), ('hath', 1941), ('man', 1835)].
 
 
 **Step 6**: Get diferent words count.
 
 
 ```python
-print("Diferent words count: " + str(words.distinct().count()))
+print('Diferent words count: %s.' % str(words.distinct().count()))
 ```
 
-    Diferent words count: 27441
+    Diferent words count: 27441.
 
 
 **Step 7**: Get most frequent two letters words.
@@ -78,8 +78,8 @@ print("Diferent words count: " + str(words.distinct().count()))
 ```python
 two_letter_words_frequency = words_frequency.filter(lambda word_times: len(word_times[0]) == 2)
                                             
-print(two_letter_words_frequency.takeOrdered(10, descendent()))
+print('Two letter words frequency: %s.' % two_letter_words_frequency.takeOrdered(10, descendent()))
 ```
 
-    [('ay', 764), ('ye', 289), ('ha', 217), ('ho', 195), ('em', 167), ('de', 115), ('la', 77), ('lo', 74), ('le', 60), ('je', 28)]
+    Two letter words frequency: [('ay', 764), ('ye', 289), ('ha', 217), ('ho', 195), ('em', 167), ('de', 115), ('la', 77), ('lo', 74), ('le', 60), ('je', 28)].
 

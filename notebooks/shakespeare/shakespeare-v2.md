@@ -60,10 +60,12 @@ words_frequency = sqlCtx.createDataFrame(words.map(lambda word: (word, 1)), Word
                         .withColumnRenamed('sum(times)', 'times') \
                         .orderBy(desc('times')) \
                         .cache()
-
+                    
+print('Words frequency:')
 words_frequency.show(10)
 ```
 
+    Words frequency:
     +-----+-----+
     | word|times|
     +-----+-----+
@@ -86,7 +88,7 @@ words_frequency.show(10)
 
 
 ```python
-print('Diferent words count: ' + str(words.distinct().count()) + '.')
+print('Diferent words count: %s.' % str(words.distinct().count()))
 ```
 
     Diferent words count: 27441.
@@ -96,9 +98,13 @@ print('Diferent words count: ' + str(words.distinct().count()) + '.')
 
 
 ```python
-words_frequency.where('length(word)=2').show(10)
+two_letter_words_frequency = words_frequency.where('length(word)=2')
+                                            
+print('Two letter words frequency:')
+two_letter_words_frequency.show(10)
 ```
 
+    Two letter words frequency:
     +----+-----+
     |word|times|
     +----+-----+
