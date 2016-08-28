@@ -4,42 +4,49 @@
 
 **Question**: What are the endpoints most accessed between 20:00 and 23:59?
 
-
 **Step 1**: Before all, download [nasa logs](http://ita.ee.lbl.gov/html/contrib/NASA-HTTP.html).
 
-**Step 2**: Load logs and show lines count.
+
+**Step 2**: Install apache-log-parser lib:
+```bash
+pip install apache-log-parser
+```
+After installation reboot jupyter.
+
+**Step 3**: Load logs and show lines count.
 
 
 ```python
 lines = sc.textFile('/home/adrian/development/spark/notebooks/nasa/access_log_Jul95')
 
-print('Lines: %s.' % lines.count())
+print('First Line: %s' % lines.take(1))
+print('File size: %s lines.' % lines.count())
 ```
 
-    Lines: 1891715.
+    First Line: ['199.72.81.55 - - [01/Jul/1995:00:00:01 -0400] "GET /history/apollo/ HTTP/1.0" 200 6245']
+    File size: 1891715 lines.
 
 
-**Step 3**: Get line tuple.
+**Step 3**: Get log lines in tuples.
 
 
 ```python
-import time
-import datetime
+import apache_log_parser
+parser = apache_log_parser.make_parser('%h - - %t \"%r\" %s %b')
 
-def to_timestamp(string):
-    return datetime.datetime.strptime(string, '%d/%b/%Y:%H:%M:%S %z')
+# print(parser('unicomp6.unicomp.net - - [01/Jul/1995:00:00:06 -0400] "GET /shuttle/countdown/ HTTP/1.0" 200 3985'))
 
-def to_line_tuple(line):
-    line_part = line.replace('[', ',').replace(']',',').split(',')
-    return (line_part[0].replace('-','').strip(), to_timestamp(line_part[1]), line_part[2].strip())
+line_tuples = lines.map(parser).map(lambda line: (line['remote_host'], \
+                                                  line['time_received_datetimeobj'], \
+                                                  line['request_first_line'], \
+                                                  int(line['status']), \
+                                                  int(line['response_bytes_clf'].replace('-','0'))) \
+                                   ).cache()
 
-
-line_tuples = lines.map(lambda line: to_line_tuple(line)).cache()
-    
 print('Line tuple: %s.' % line_tuples.take(1))
 ```
 
-    Line tuple: [('199.72.81.55', datetime.datetime(1995, 7, 1, 0, 0, 1, tzinfo=datetime.timezone(datetime.timedelta(-1, 72000))), '"GET /history/apollo/ HTTP/1.0" 200 6245')].
+    Line tuple: [('199.72.81.55', datetime.datetime(1995, 7, 1, 0, 0, 1), 'GET /history/apollo/ HTTP/1.0', 200, 6245)].
 
 
 **Step 4**: Get log rows.
@@ -50,20 +57,22 @@ from pyspark.sql.types import *
 from pyspark.sql import *
 from pyspark.sql.functions import *
 
-LogRow = StructType([  StructField('remote_host', StringType(),    False), \
-                       StructField('datetime',    TimestampType(), False), \
-                       StructField('message',     StringType(),    False)  ])
-    
-rows = sqlCtx.createDataFrame(line_tuples, LogRow)
+LogRow = StructType([  StructField('remote_host',   StringType(),    False), \
+                       StructField('timestamp',     TimestampType(), False), \
+                       StructField('request',       StringType(),    False), \
+                       StructField('status',        IntegerType(),   False), \
+                       StructField('response_size', LongType(),      False), ])
+
+rows = sqlCtx.createDataFrame(line_tuples, LogRow).cache()
 
 rows.show(1)
 ```
 
-    +------------+--------------------+--------------------+
-    | remote_host|            datetime|             message|
-    +------------+--------------------+--------------------+
-    |199.72.81.55|1995-07-01 01:00:...|"GET /history/apo...|
-    +------------+--------------------+--------------------+
+    +------------+--------------------+--------------------+------+-------------+
+    | remote_host|           timestamp|             request|status|response_size|
+    +------------+--------------------+--------------------+------+-------------+
+    |199.72.81.55|1995-07-01 00:00:...|GET /history/apol...|   200|         6245|
+    +------------+--------------------+--------------------+------+-------------+
     only showing top 1 row
     
 
