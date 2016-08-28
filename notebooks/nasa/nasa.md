@@ -2,7 +2,11 @@
 
 ## Nasa example
 
-**Question**: What are the endpoints most accessed between 20:00 and 23:59?
+**Question**
+
+What were the endpoints most accessed between 20:00 and 23:59?
+
+**Solution**
 
 
 **Step 1**: Install apache-log-parser lib:
@@ -21,7 +25,7 @@ sc._conf.set("spark.executor.memory", "8g")
 
 
 
-    <pyspark.conf.SparkConf at 0x7f0039e2dfd0>
+    <pyspark.conf.SparkConf at 0x7fe446628e48>
 
 
 
@@ -105,11 +109,12 @@ rows.show(1, False)
 
 
 ```python
-rows.where('hour(timestamp) >= 20 and hour(timestamp) <= 23 and status = 200') \
+most_accessed_endpoints = rows.where('hour(timestamp) >= 20 and hour(timestamp) <= 23 and status = 200') \
     .groupBy('endpoint') \
     .count() \
-    .orderBy(desc('count')) \
-    .show(20, False)
+    .orderBy(desc('count'))
+
+most_accessed_endpoints.show(20, False)
 ```
 
     +-------------------------------------------------+-----+
@@ -120,8 +125,8 @@ rows.where('hour(timestamp) >= 20 and hour(timestamp) <= 23 and status = 200') \
     | /ksc.html                                       |4084 |
     | /shuttle/missions/missions.html                 |3617 |
     | /htbin/cdt_main.pl                              |2961 |
-    | /shuttle/countdown/liftoff.html                 |2569 |
     | /shuttle/missions/sts-71/mission-sts-71.html    |2569 |
+    | /shuttle/countdown/liftoff.html                 |2569 |
     | /history/apollo/apollo-13/apollo-13.html        |2489 |
     | /history/apollo/apollo.html                     |2476 |
     | /shuttle/missions/sts-70/mission-sts-70.html    |2264 |
