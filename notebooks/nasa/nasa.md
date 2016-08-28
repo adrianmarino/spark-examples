@@ -21,7 +21,7 @@ sc._conf.set("spark.executor.memory", "8g")
 
 
 
-    <pyspark.conf.SparkConf at 0x7f248222efd0>
+    <pyspark.conf.SparkConf at 0x7f0039e2dfd0>
 
 
 
@@ -52,22 +52,25 @@ import apache_log_parser
 parser = apache_log_parser.make_parser('%h - - %t \"%r\" %s %b')
 
 def is_valid(line):
-    return len(line) > 50
+    return len(line) > 50 and \
+            'image' not in line and \
+            'icon' not in line and \
+            '.gif' not in line
 
 def to_log_line(line):
     parsed_line = parser(line)
     return (parsed_line['remote_host'], \
             parsed_line['time_received_datetimeobj'], \
-            parsed_line['request_first_line'], \
+            parsed_line['request_first_line'].replace('GET', '').replace('HTTP/1.0',''), \
             int(parsed_line['status']), \
-            int(parsed_line['response_bytes_clf'].replace('-','0')))        
+            int(parsed_line['response_bytes_clf'].replace('-','0')))    
 
 line_tuples = lines.filter(is_valid).map(to_log_line).cache()
 
 print('Line tuple: %s.' % line_tuples.take(1))
 ```
 
-    Line tuple: [('199.72.81.55', datetime.datetime(1995, 7, 1, 0, 0, 1), 'GET /history/apollo/ HTTP/1.0', 200, 6245)].
+    Line tuple: [('199.72.81.55', datetime.datetime(1995, 7, 1, 0, 0, 1), ' /history/apollo/ ', 200, 6245)].
 
 
 **Step 4**: Get log rows.
@@ -80,34 +83,59 @@ from pyspark.sql.functions import *
 
 LogRow = StructType([  StructField('remote_host',   StringType(),    False), \
                        StructField('timestamp',     TimestampType(), False), \
-                       StructField('request',       StringType(),    False), \
+                       StructField('endpoint',      StringType(),    False), \
                        StructField('status',        IntegerType(),   False), \
                        StructField('response_size', LongType(),      False), ])
 
 rows = sqlCtx.createDataFrame(line_tuples, LogRow).cache()
 
-rows.show(1)
+rows.show(1, False)
 ```
 
-    +------------+--------------------+--------------------+------+-------------+
-    | remote_host|           timestamp|             request|status|response_size|
-    +------------+--------------------+--------------------+------+-------------+
-    |199.72.81.55|1995-07-01 00:00:...|GET /history/apol...|   200|         6245|
-    +------------+--------------------+--------------------+------+-------------+
+    +------------+---------------------+------------------+------+-------------+
+    |remote_host |timestamp            |endpoint          |status|response_size|
+    +------------+---------------------+------------------+------+-------------+
+    |199.72.81.55|1995-07-01 00:00:01.0| /history/apollo/ |200   |6245         |
+    +------------+---------------------+------------------+------+-------------+
     only showing top 1 row
     
 
 
-**Step 5**: Get rows between 20:00 and 23:59.
+**Step 5**: Get endpoints most accessed between 20:00 and 23:59.
 
 
 ```python
-# In Progress...
+rows.where('hour(timestamp) >= 20 and hour(timestamp) <= 23 and status = 200') \
+    .groupBy('endpoint') \
+    .count() \
+    .orderBy(desc('count')) \
+    .show(20, False)
 ```
 
-**Step 6**: Get endpoints most accessed.
+    +-------------------------------------------------+-----+
+    |endpoint                                         |count|
+    +-------------------------------------------------+-----+
+    | /shuttle/countdown/                             |5590 |
+    | /                                               |4970 |
+    | /ksc.html                                       |4084 |
+    | /shuttle/missions/missions.html                 |3617 |
+    | /htbin/cdt_main.pl                              |2961 |
+    | /shuttle/countdown/liftoff.html                 |2569 |
+    | /shuttle/missions/sts-71/mission-sts-71.html    |2569 |
+    | /history/apollo/apollo-13/apollo-13.html        |2489 |
+    | /history/apollo/apollo.html                     |2476 |
+    | /shuttle/missions/sts-70/mission-sts-70.html    |2264 |
+    | /history/history.html                           |1911 |
+    | /shuttle/countdown/countdown.html               |1195 |
+    | /software/winvn/winvn.html                      |1122 |
+    | /shuttle/technology/sts-newsref/stsref-toc.html |1108 |
+    | /history/apollo/apollo-13/apollo-13-info.html   |1101 |
+    | /shuttle/missions/sts-71/movies/movies.html     |946  |
+    | /htbin/cdt_clock.pl                             |906  |
+    | /facilities/lc39a.html                          |904  |
+    | /shuttle/missions/sts-69/mission-sts-69.html    |892  |
+    | /shuttle/missions/sts-70/movies/movies.html     |871  |
+    +-------------------------------------------------+-----+
+    only showing top 20 rows
+    
 
-
-```python
-# In Progress...
-```
