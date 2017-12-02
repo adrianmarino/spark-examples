@@ -13,7 +13,7 @@ yaourt -S apache-spark
 yaourt -S anaconda
 ```
 
-**Step 3:** Edit ```~/.bashrc``` and add:
+**Step 3:** Create ```~/.jupyterrc``` and add:
 
 ```bash
 # Tell spark that use all cpu cores...
@@ -28,13 +28,19 @@ export PYSPARK_PYTHON=$ANACONDA_ROOT/bin/python
 export PATH=$ANACONDA_ROOT/bin:$PATH
 export PATH=$SPARK_HOME/bin:$PATH
 
-alias jupyter='IPYTHON_OPTS="notebook" pyspark'
+alias jupyter='PYSPARK_DRIVER_PYTHON_OPTS="notebook" pyspark'
 ```
 
-**Step 4:** Include variables on previous step.
+**Step 4:** Include .jupyterrc under shell startup script.
 
 ```bash
-source ~/.bashrc
+echo "source ~/.jupiterrc" >> ~/.bashrc
+```
+
+**Step 4:** Include variables in current shell session.
+
+```bash
+source ~/.jupiterrc
 ```
 
 **Step 5:** Start Jupyter.
