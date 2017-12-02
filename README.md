@@ -37,19 +37,19 @@ alias jupyter='PYSPARK_DRIVER_PYTHON_OPTS="notebook" pyspark'
 echo "source ~/.jupiterrc" >> ~/.bashrc
 ```
 
-**Step 4:** Include variables in current shell session.
+**Step 5:** Include variables in current shell session.
 
 ```bash
 source ~/.jupiterrc
 ```
 
-**Step 5:** Start Jupyter.
+**Step 6:** Start Jupyter.
 
 ```bash
 jupyter
 ```
 
-**Step 6:** Go to [http://localhost:8888](http://localhost:8888).
+**Step 7:** Go to [http://localhost:8888](http://localhost:8888).
 
 ## Notebooks
 
