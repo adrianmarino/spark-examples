@@ -11,7 +11,7 @@ What were the endpoints most accessed between 20:00 and 23:59?
 
 **Step 1**: Install apache-log-parser lib:
 ```bash
-pip install apache-log-parser
+!pip install apache-log-parser
 ```
 After installation, reboot jupyter.
 
